@@ -1,0 +1,4 @@
+SELECT autor_id
+FROM livros
+GROUP BY autor_id
+HAVING COUNT(*) > 2;
