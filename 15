@@ -1,0 +1,4 @@
+SELECT alunos.nome, cursos.nome
+FROM alunos
+INNER JOIN cursos
+ON alunos.curso_id = cursos.id;
