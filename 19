@@ -1,0 +1,3 @@
+SELECT alunos.nome, COUNT(*) AS total_matriculas
+FROM alunos
+GROUP BY alunos.nome;
