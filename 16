@@ -1,0 +1,4 @@
+SELECT autores.nome
+FROM autores
+ORDER BY COUNT(*) DESC
+LIMIT 1;
