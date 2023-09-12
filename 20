@@ -1,0 +1,5 @@
+SELECT produto, COUNT(*) AS total_transacoes
+FROM vendas
+GROUP BY produto
+ORDER BY total_transacoes DESC
+LIMIT 1;
