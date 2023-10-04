@@ -1,0 +1,147 @@
+ex 1
+DELIMITER //
+CREATE PROCEDURE sp_ListarAutores()
+BEGIN
+ SELECT * FROM Autor;
+END//
+DELIMITER ;
+ex2
+DELIMITER //
+CREATE PROCEDURE sp_LivrosPorCategoria(IN categoriaNome VARCHAR(100))
+BEGIN
+ SELECT Livro.Titulo
+ FROM Livro
+ INNER JOIN Categoria ON Livro.Categoria_ID = Categoria.Categoria_ID
+ WHERE Categoria.Nome = categoriaNome;
+END//
+DELIMITER ;
+ex3
+DELIMITER //
+CREATE PROCEDURE sp_ContarLivrosPorCategoria(IN categoriaNome VARCHAR(100), OUT total
+INT)
+BEGIN
+ SELECT COUNT(*) INTO total
+ FROM Livro
+ INNER JOIN Categoria ON Livro.Categoria_ID = Categoria.Categoria_ID
+ WHERE Categoria.Nome = categoriaNome;
+END//
+DELIMITER ;
+ex4
+DELIMITER //
+CREATE PROCEDURE sp_VerificarLivrosCategoria(IN categoriaNome VARCHAR(100), OUT
+possuiLivros BOOLEAN)
+BEGIN
+ DECLARE total INT;
+ CALL sp_ContarLivrosPorCategoria(categoriaNome, total);
+
+ IF total > 0 THEN
+ SET possuiLivros = TRUE;
+ ELSE
+ SET possuiLivros = FALSE;
+ END IF;
+END//
+DELIMITER ;
+ex5
+DELIMITER //
+CREATE PROCEDURE sp_LivrosAteAno(IN ano INT)
+BEGIN
+ SELECT Titulo
+ FROM Livro
+ WHERE Ano_Publicacao <= ano;
+END//
+DELIMITER ;
+ex6
+DELIMITER //
+CREATE PROCEDURE sp_TitulosPorCategoria(IN categoriaNome VARCHAR(100))
+BEGIN
+ DECLARE done INT DEFAULT 0;
+ DECLARE livroTitulo VARCHAR(255);
+ DECLARE cur CURSOR FOR
+ SELECT Livro.Titulo
+ FROM Livro
+ INNER JOIN Categoria ON Livro.Categoria_ID = Categoria.Categoria_ID
+ WHERE Categoria.Nome = categoriaNome;
+ DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+ OPEN cur;
+ FETCH cur INTO livroTitulo;
+ WHILE NOT done DO
+ SELECT livroTitulo;
+ FETCH cur INTO livroTitulo;
+ END WHILE;
+ CLOSE cur;
+END//
+DELIMITER ;
+ex7
+DELIMITER //
+CREATE PROCEDURE sp_AdicionarLivro(IN novoTitulo VARCHAR(255), IN novaEditoraID INT, IN
+novoAno INT, IN novoNumPaginas INT, IN novaCategoriaID INT)
+BEGIN
+ DECLARE EXIT HANDLER FOR 1062
+ BEGIN
+ -- Código de erro 1062: Chave duplicada.
+ SIGNAL SQLSTATE '45000'
+ SET MESSAGE_TEXT = 'Erro: O livro já existe na tabela Livro.';
+ END;
+ INSERT INTO Livro (Titulo, Editora_ID, Ano_Publicacao, Numero_Paginas, Categoria_ID)
+ VALUES (novoTitulo, novaEditoraID, novoAno, novoNumPaginas, novaCategoriaID);
+END//
+DELIMITER ;
+ex8
+DELIMITER //
+CREATE PROCEDURE sp_AutorMaisAntigo(OUT autorNome VARCHAR(255))
+BEGIN
+ SELECT CONCAT(Nome, ' ', Sobrenome) INTO autorNome
+ FROM Autor
+ WHERE Data_Nascimento = (SELECT MIN(Data_Nascimento) FROM Autor);
+END//
+DELIMITER ;
+ex9
+DELIMITER //
+CREATE PROCEDURE sp_LivrosPorCategoria(IN categoriaNome VARCHAR(100))
+BEGIN
+ -- Esta stored procedure recebe o nome de uma categoria como parâmetro e lista todos os livros
+que pertencem a essa categoria.
+ -- Declaração do cursor para percorrer os livros da categoria.
+ DECLARE done INT DEFAULT 0;
+ DECLARE livroTitulo VARCHAR(255);
+ DECLARE cur CURSOR FOR
+ SELECT Livro.Titulo
+ FROM Livro
+ INNER JOIN Categoria ON Livro.Categoria_ID = Categoria.Categoria_ID
+ WHERE Categoria.Nome = categoriaNome;
+ DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+ -- Abre o cursor.
+ OPEN cur;
+ -- Obtém os títulos dos livros da categoria.
+ FETCH cur INTO livroTitulo;
+ WHILE NOT done DO
+ -- Retorna o título do livro.
+ SELECT livroTitulo;
+ FETCH cur INTO livroTitulo;
+ END WHILE;
+ -- Fecha o cursor.
+ CLOSE cur;
+END//
+DELIMITER ;
+ex10
+DELIMITER //
+CREATE PROCEDURE sp_LivrosESeusAutores()
+BEGIN
+ DECLARE done INT DEFAULT 0;
+ DECLARE livroTitulo VARCHAR(255);
+ DECLARE autorNome VARCHAR(255);
+ DECLARE cur CURSOR FOR
+ SELECT Livro.Titulo, CONCAT(Autor.Nome, ' ', Autor.Sobrenome) AS NomeAutor
+ FROM Livro
+ INNER JOIN Autor_Livro ON Livro.Livro_ID = Autor_Livro.Livro_ID
+ INNER JOIN Autor ON Autor_Livro.Autor_ID = Autor.Autor_ID;
+ DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+ OPEN cur;
+ FETCH cur INTO livroTitulo, autorNome;
+ WHILE NOT done DO
+ SELECT livroTitulo, autorNome;
+ FETCH cur INTO livroTitulo, autorNome;
+ END WHILE;
+ CLOSE cur;
+END//
+DELIMITER ;
